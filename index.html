@@ -7,9 +7,18 @@
 body{font-family:tahoma;background:#f5f0e8;margin:0}
 header{background:#174d3b;color:white;padding:20px;text-align:center}
 .box{background:white;margin:15px;padding:15px;border-radius:15px}
-button{background:#176b55;color:white;border:0;padding:10px;border-radius:10px}
+button{background:#176b55;color:white;border:0;padding:10px;margin:5px;border-radius:10px}
 </style>
 </head>
 <body>
-
-
+<header><h1>🏛️ موزه دیدنی‌ها</h1><p>هنر و تاریخ</p></header>
+<div class="box"><h2>🖼️ گالری آثار</h2>
+<p>🎨 گالری نقاشی</p><button onclick="speak('گالری نقاشی')">🔊 پخش صدا</button>
+<p>🏺 ظرف سفالی تاریخی</p><button onclick="speak('ظرف سفالی تاریخی')">🔊 پخش صدا</button>
+<p>🗿 پیکره سنگی</p><button onclick="speak('پیکره سنگی')">🔊 پخش صدا</button></div>
+<div class="box"><h2>ℹ️ درباره موزه</h2><p>نمایش آثار فرهنگی همراه با راهنمای صوتی</p></div>
+<script>
+function speak(t){let u=new SpeechSynthesisUtterance(t);u.lang="fa-IR";speechSynthesis.cancel();speechSynthesis.speak(u)}
+</script>
+</body>
+</html>
