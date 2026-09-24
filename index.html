@@ -1,15 +1,13 @@
+</div>
 
-<p>آثار مورد علاقه شما</p>
-</section>
-
-<section class="hero">
+<div class="box">
 <h2>ℹ️ درباره موزه</h2>
-<p>این موزه برای نمایش آثار فرهنگی و ارائه راهنمای صوتی طراحی شده است.</p>
-</section>
+<p>نمایش آثار فرهنگی همراه با راهنمای صوتی</p>
+</div>
 
 <script>
-function speak(text){
-let u=new SpeechSynthesisUtterance(text);
+function speak(t){
+let u=new SpeechSynthesisUtterance(t);
 u.lang="fa-IR";
 speechSynthesis.cancel();
 speechSynthesis.speak(u);
