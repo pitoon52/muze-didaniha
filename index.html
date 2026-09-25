@@ -2,23 +2,123 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>موزه دیدنی‌ها</title>
 <style>
-body{font-family:tahoma;background:#f5f0e8;margin:0}
-header{background:#174d3b;color:white;padding:20px;text-align:center}
-.box{background:white;margin:15px;padding:15px;border-radius:15px}
-button{background:#176b55;color:white;border:0;padding:10px;margin:5px;border-radius:10px}
+*{box-sizing:border-box}
+body{margin:0;background:#f6f2e9;color:#1d2d26;font:16px Tahoma,Arial;line-height:1.8}
+header{background:#17372d;color:#fff;padding:22px 16px}
+.wrap{max-width:950px;margin:auto}
+h1{margin:0;font-size:27px}.sub{color:#e2e9e4;font-size:13px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+button{border:0;border-radius:9px;padding:10px 14px;background:#c79b53;color:#17291f;font:inherit;font-weight:bold;cursor:pointer}
+.dark{background:#214c3c;color:#fff}.light{background:#e7e2d8}
+main{padding:20px 16px 40px}
+.notice{background:#fff4d9;border-radius:10px;padding:12px;margin-bottom:18px}
+.rooms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.card{background:#fff;border:1px solid #e7dfd1;border-radius:13px;overflow:hidden}
+.thumb{height:130px;display:grid;place-items:center;font-size:52px;background:linear-gradient(135deg,#e9d7b6,#f7efe2)}
+.body{padding:13px}.body h3{margin:0;font-size:17px}.body p{font-size:13px;color:#59675f;margin:5px 0 11px}
+.panel{display:none;background:#fff;border:1px solid #d8c8a8;border-radius:14px;padding:15px;margin:18px 0}
+input,textarea,select{width:100%;padding:10px;border:1px solid #cfc8bb;border-radius:8px;font:inherit;margin:5px 0 12px}
+label{font-size:13px;font-weight:bold}.row{display:flex;gap:10px}.row>*{flex:1}
+#welcome{display:none;background:#e5f3e7;padding:15px;border-radius:10px;margin:18px 0}
+#count{font-size:13px;color:#65736a;margin:8px 0}
+@media(max-width:560px){.rooms{grid-template-columns:1fr}.row{display:block}.row>*{width:100%;margin-bottom:8px}}
 </style>
 </head>
 <body>
-<header><h1>🏛️ موزه دیدنی‌ها</h1><p>هنر و تاریخ</p></header>
-<div class="box"><h2>🖼️ گالری آثار</h2>
-<p>🎨 گالری نقاشی</p><button onclick="speak('گالری نقاشی')">🔊 پخش صدا</button>
-<p>🏺 ظرف سفالی تاریخی</p><button onclick="speak('ظرف سفالی تاریخی')">🔊 پخش صدا</button>
-<p>🗿 پیکره سنگی</p><button onclick="speak('پیکره سنگی')">🔊 پخش صدا</button></div>
-<div class="box"><h2>ℹ️ درباره موزه</h2><p>نمایش آثار فرهنگی همراه با راهنمای صوتی</p></div>
+<header>
+<div class="wrap">
+<h1>🏛️ موزه دیدنی‌ها</h1>
+<div class="sub">گالری آنلاین هنر، تاریخ و میراث</div>
+<div class="toolbar">
+<button onclick="enterMuseum()">ورود به موزه — ۱۰٬۰۰۰ تومان</button>
+<button class="light" onclick="toggleAdmin()">مدیریت آثار</button>
+<button class="light" onclick="speak('به موزه دیدنی‌ها خوش آمدید. برای شنیدن توضیحات هر اثر، دکمه راهنمای صوتی را لمس کنید.')">🔊 معرفی موزه</button>
+</div>
+</div>
+</header>
+
+<main class="wrap">
+<div class="notice">برای نمایش صحیح، صفحه را یک‌بار تازه‌سازی کنید. راهنمای صوتی با لمس دکمه هر اثر اجرا می‌شود.</div>
+
+<section id="admin" class="panel">
+<h2>افزودن اثر</h2>
+<label>نام اثر</label><input id="title" placeholder="مثلاً جام تاریخی">
+<label>بخش موزه</label>
+<select id="category"><option>گالری نقاشی</option><option>عکس‌های تاریخی</option><option>آثار باستانی</option><option>نمایشگاه ویژه</option></select>
+<label>توضیحات</label><textarea id="desc" rows="3" placeholder="توضیح اثر"></textarea>
+<div class="row"><button class="dark" onclick="addItem()">افزودن اثر</button><button class="light" onclick="clearItems()">پاک کردن آثار افزوده‌شده</button></div>
+</section>
+
+<div id="welcome"><b>خوش آمدید 🌹</b><br>موزه آماده بازدید است. برای پرداخت واقعی آنلاین، درگاه پرداخت باید در مرحله اتصال سرور به سامانه پرداخت متصل شود.</div>
+
+<h2>گالری آثار</h2>
+<div id="count"></div>
+<div class="rooms" id="rooms"></div>
+</main>
+
 <script>
-function speak(t){let u=new SpeechSynthesisUtterance(t);u.lang="fa-IR";speechSynthesis.cancel();speechSynthesis.speak(u)}
+const icons={'گالری نقاشی':'🎨','عکس‌های تاریخی':'📷','آثار باستانی':'🏺','نمایشگاه ویژه':'🖼️'};
+const initial=[
+['تابلوی بهار','گالری نقاشی','نمونه‌ای از هنر و رنگ‌آمیزی طبیعت.'],
+['پرتره تاریخی','گالری نقاشی','پرتره‌ای با حال‌وهوای تاریخی.'],
+['نمای شهر قدیم','عکس‌های تاریخی','تصویری از زندگی و معماری گذشته.'],
+['میدان تاریخی','عکس‌های تاریخی','روایتی تصویری از یک شهر قدیمی.'],
+['جام سفالی','آثار باستانی','نمونه‌ای از ظروف سفالی تاریخی.'],
+['کوزه باستانی','آثار باستانی','شیئی برای آشنایی با زندگی پیشینیان.'],
+['سکه تاریخی','آثار باستانی','نمونه‌ای از سکه‌های قدیمی.'],
+['نمایشگاه میراث','نمایشگاه ویژه','مجموعه‌ای منتخب از آثار موزه.'],
+['نقش گل','گالری نقاشی','اثری با موضوع گل و طبیعت.'],
+['خانه قدیمی','عکس‌های تاریخی','تصویری از یک خانه تاریخی.'],
+['ظرف تاریخی','آثار باستانی','نمونه‌ای از صنایع دستی قدیمی.'],
+['مجموعه ویژه','نمایشگاه ویژه','مجموعه‌ای موضوعی برای بازدیدکنندگان.']
+];
+
+function speak(t){
+ if(!('speechSynthesis' in window)){alert('مرورگر گوشی پخش گفتار را پشتیبانی نمی‌کند.');return}
+ window.speechSynthesis.cancel();
+ const u=new SpeechSynthesisUtterance(t);
+ u.lang='fa-IR';u.rate=.9;u.pitch=1;
+ window.speechSynthesis.speak(u);
+}
+function enterMuseum(){
+ document.getElementById('welcome').style.display='block';
+ document.getElementById('welcome').scrollIntoView({behavior:'smooth'});
+}
+function toggleAdmin(){
+ const a=document.getElementById('admin');
+ a.style.display=a.style.display==='block'?'none':'block';
+}
+function card(item){
+ const [t,c,d]=item;
+ const el=document.createElement('div');el.className='card';
+ el.innerHTML='<div class="thumb">'+(icons[c]||'🖼️')+'</div><div class="body"><h3></h3><p></p><button class="dark">🔊 راهنمای صوتی</button></div>';
+ el.querySelector('h3').textContent=t;
+ el.querySelector('p').textContent=c+' — '+d;
+ el.querySelector('button').onclick=()=>speak(t+'. '+d);
+ return el;
+}
+function render(){
+ const rooms=document.getElementById('rooms');rooms.innerHTML='';
+ initial.forEach(x=>rooms.appendChild(card(x)));
+ let extra=[];try{extra=JSON.parse(localStorage.getItem('museum_items')||'[]')}catch(e){}
+ extra.forEach(x=>rooms.appendChild(card([x.t,x.c,x.d])));
+ document.getElementById('count').textContent='تعداد آثار نمایش‌داده‌شده: '+(initial.length+extra.length);
+}
+function addItem(){
+ const t=document.getElementById('title').value.trim();
+ const c=document.getElementById('category').value;
+ const d=document.getElementById('desc').value.trim();
+ if(!t||!d){alert('نام اثر و توضیحات را وارد کنید.');return}
+ let items=[];try{items=JSON.parse(localStorage.getItem('museum_items')||'[]')}catch(e){}
+ items.push({t,c,d});localStorage.setItem('museum_items',JSON.stringify(items));
+ document.getElementById('title').value='';document.getElementById('desc').value='';
+ render();alert('اثر اضافه شد.');
+}
+function clearItems(){localStorage.removeItem('museum_items');render();}
+render();
 </script>
 </body>
 </html>
