@@ -78,7 +78,7 @@ const initial=[
 
 function speak(t){
  if(!('speechSynthesis' in window)){alert('مرورگر گوشی پخش گفتار را پشتیبانی نمی‌کند.');return}
- window.speechSynthesis.cancel();
+ window.speechSynthesis.cancel();window.speechSynthesis.resume();
  const u=new SpeechSynthesisUtterance(t);
  u.lang='fa-IR';u.rate=.9;u.pitch=1;
  window.speechSynthesis.speak(u);
