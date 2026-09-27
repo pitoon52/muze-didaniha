@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>پنل مدیریت | موزه دیدنی‌ها</title>
+<style>
+body{margin:0;font-family:Tahoma,Arial;background:#f7f5ff;color:#211b2d}
+.wrap{max-width:900px;margin:auto;padding:20px}
+.card{background:#fff;border-radius:18px;padding:20px;margin:15px 0;box-shadow:0 5px 20px #0001}
+h1{color:#6d28d9}
+label{display:block;margin-top:14px;font-weight:bold}
+input,button{font:inherit;padding:11px;border-radius:10px}
+input{width:100%;box-sizing:border-box;border:1px solid #ddd;margin-top:6px}
+button{border:0;background:#6d28d9;color:white;margin-top:18px;cursor:pointer}
+.secondary{background:#eee;color:#222}
+#msg{margin-top:15px;padding:10px;border-radius:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="card">
+<h1>🛠 پنل مدیریت موزه دیدنی‌ها</h1>
+<p>تنظیمات موزه و قیمت بلیت</p>
+
+<label>نام موزه</label>
+<input id="museumName" placeholder="موزه دیدنی‌ها">
+
+<label>قیمت بلیت ایران (تومان)</label>
+<input id="iranPrice" type="number" placeholder="100000">
+
+<label>قیمت بلیت بین‌المللی (یورو)</label>
+<input id="internationalPrice" type="number" placeholder="5">
+
+<button onclick="saveConfig()">ذخیره تنظیمات</button>
+<div id="msg"></div>
+</div>
+
+<div class="card">
+<h2>🎨 آثار موزه</h2>
+<p>آثار منتشرشده از طریق API موزه نمایش داده می‌شوند.</p>
+<button class="secondary" onclick="loadWorks()">بارگذاری آثار</button>
+<div id="works"></div>
+</div>
+
+<div class="card">
+<h2>💳 وضعیت پرداخت</h2>
+<p>پرداخت ایران: زرین‌پال</p>
+<p>پرداخت بین‌المللی: Paddle</p>
+<p>اطلاعات محرمانه در این صفحه وارد نشود.</p>
+</div>
+
+</div>
+
+<script>
+async function loadConfig(){
+ try{
+  const r=await fetch('/api/public-config');
+  const c=await r.json();
+  museumName.value=c.museumName||'موزه دیدنی‌ها';
+  iranPrice.value=c.iranPrice||'';
+  internationalPrice.value=c.internationalPrice||'';
+ }catch(e){
+  msg.textContent='اتصال به تنظیمات سرور برقرار نشد.';
+ }
+}
+
+async function saveConfig(){
+ msg.textContent='در حال ذخیره...';
+ try{
+  const r=await fetch('/api/admin/config',{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({
+    museumName:museumName.value,
+    iranPrice:Number(iranPrice.value),
+    internationalPrice:Number(internationalPrice.value)
+   })
+  });
+  const x=await r.json();
+  msg.textContent=r.ok?'✅ تنظیمات ذخیره شد.':(x.error||'ذخیره انجام نشد.');
+ }catch(e){
+  msg.textContent='❌ API مدیریت هنوز روی سرور فعال نشده است.';
+ }
+}
+
+async function loadWorks(){
+ const box=document.getElementById('works');
+ box.innerHTML='در حال بارگذاری...';
+ try{
+  const r=await fetch('/api/works?lang=fa');
+  const a=await r.json();
+  box.innerHTML=a.map(x=>'<p>• '+escapeHtml(x.title)+'</p>').join('')
+   ||'هنوز اثری ثبت نشده است.';
+ }catch(e){
+  box.innerHTML='❌ API آثار هنوز فعال نشده است.';
+ }
+}
+
+function escapeHtml(s){
+ return String(s||'').replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+ });
+}
+
+loadConfig();
+</script>
+</body>
+</html>
